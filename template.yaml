@@ -1,0 +1,156 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Sample SAM Template for serverless-cms-dotnet
+
+    # You can add LoggingConfig parameters such as the Logformat, Log Group, and SystemLogLevel or ApplicationLogLevel. Learn more here https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-resource-function.html#sam-function-loggingconfig.
+    LoggingConfig:
+      LogFormat: JSON
+
+# Parameters:
+  # CognitoUserEmail:
+  #   Description: Email address of the created user
+  #   Type: String
+  # APIStageName:
+  #   Default: api
+  #   Description: StageName of API Gateway deployment
+  #   Type: String
+
+Resources:
+  UserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      UserPoolId: !Ref UserPool
+      ClientName: "Serverless CMS Authentication Client"
+      GenerateSecret: true
+      RefreshTokenValidity: 30
+      AccessTokenValidity: 60
+      IdTokenValidity: 60
+      TokenValidityUnits:
+        AccessToken: "minutes"
+        IdToken: "minutes"
+        RefreshToken: "days"
+      ExplicitAuthFlows:
+        - ALLOW_REFRESH_TOKEN_AUTH
+        - ALLOW_USER_SRP_AUTH
+      SupportedIdentityProviders:
+        - COGNITO
+      CallbackURLs: 
+        - "http://localhost:3000/api/auth/callback/cognito"
+      AllowedOAuthFlows:
+        - code
+      AllowedOAuthScopes:
+        - email
+        - profile
+        - openid
+      AllowedOAuthFlowsUserPoolClient: true
+      PreventUserExistenceErrors: ENABLED
+      EnableTokenRevocation: true
+      EnablePropagateAdditionalUserContextData: false
+      AuthSessionValidity: 3
+  
+  # UserPoolUser:
+  #   Type: AWS::Cognito::UserPoolUser
+  #   Properties:
+  #     DesiredDeliveryMediums:
+  #       - EMAIL
+  #     Username: !Ref CognitoUserEmail
+  #     UserPoolId: !Ref UserPool
+
+  UserPoolDomain:
+    Type: AWS::Cognito::UserPoolDomain
+    Properties:
+      Domain : "serverless-cms-user-pool"
+      UserPoolId : !Ref UserPool
+
+  UserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: Severless CMS User Pool
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 8
+          RequireUppercase: true
+          RequireLowercase: true
+          RequireNumbers: true
+          RequireSymbols: true
+          TemporaryPasswordValidityDays: 7
+      Schema:
+        - AttributeDataType: String
+          Name: email
+          Required: false
+      AutoVerifiedAttributes:
+        - email
+      UsernameAttributes:
+        - email
+      VerificationMessageTemplate:
+        DefaultEmailOption: CONFIRM_WITH_CODE
+      UserAttributeUpdateSettings:
+        AttributesRequireVerificationBeforeUpdate:
+          - email
+      MfaConfiguration: "OFF"
+      EmailConfiguration:
+        EmailSendingAccount: COGNITO_DEFAULT
+      UsernameConfiguration:
+        CaseSensitive: false
+
+  # AccessLogGroup:
+  #   Type: AWS::Logs::LogGroup
+
+  HelloWorldApiGateway:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: Hello World API Gateway
+      StageName: Staging
+      AccessLogSetting:
+        # DestinationArn: !GetAtt AccessLogGroup.Arn
+        Format: '{"requestTime":"$context.requestTime","requestId":"$context.requestId","httpMethod":"$context.httpMethod","path":"$context.path","resourcePath":"$context.resourcePath","status":$context.status,"responseLatency":$context.responseLatency}'
+
+  GenPresignedUrlGateway:
+    # DependsOn: UserPool
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: GenPresignedUrlGateway Api Gateway
+      StageName: Staging
+      Cors: "'*'"
+      Auth:
+        Authorizers:
+            CognitoAuthorizer:
+              UserPoolArn: !GetAtt "UserPool.Arn"
+      AccessLogSetting:
+        # DestinationArn: !GetAtt AccessLogGroup.Arn
+        Format: '{"requestTime":"$context.requestTime","requestId":"$context.requestId","httpMethod":"$context.httpMethod","path":"$context.path","resourcePath":"$context.resourcePath","status":$context.status,"responseLatency":$context.responseLatency}'
+
+  HelloWorldFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./src/HelloWorld/
+      Handler: HelloWorld::HelloWorld.Function::FunctionHandler
+      Runtime: dotnet8
+      Architectures:
+      - x86_64
+      Events:
+        HelloWorldApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref HelloWorldApiGateway
+            Path: /hello
+            Method: GET
+
+  GenPresignedUrlFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./src/GenPresignedUrl/
+      Handler: GenPresignedUrl::GenPresignedUrl.Function::FunctionHandler
+      Runtime: dotnet8
+      Architectures:
+      - x86_64
+      Events:
+        HelloWorldApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref GenPresignedUrlGateway
+            Path: /gen-presigned-url
+            Method: GET
+            Auth:
+              Authorizer: CognitoAuthorizer
