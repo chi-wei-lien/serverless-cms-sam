@@ -121,6 +121,42 @@ Resources:
         # DestinationArn: !GetAtt AccessLogGroup.Arn
         Format: '{"requestTime":"$context.requestTime","requestId":"$context.requestId","httpMethod":"$context.httpMethod","path":"$context.path","resourcePath":"$context.resourcePath","status":$context.status,"responseLatency":$context.responseLatency}'
 
+  FetchTableContentGateway:
+    # DependsOn: UserPool
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: FetchTableContent Api Gateway
+      StageName: Staging
+      Cors:
+            AllowMethods: "'GET,POST,OPTIONS'"
+            AllowHeaders: "'content-type'"
+            AllowOrigin: "'*'"
+      # Auth:
+      #   Authorizers:
+      #       CognitoAuthorizer:
+      #         UserPoolArn: !GetAtt "UserPool.Arn"
+      AccessLogSetting:
+        # DestinationArn: !GetAtt AccessLogGroup.Arn
+        Format: '{"requestTime":"$context.requestTime","requestId":"$context.requestId","httpMethod":"$context.httpMethod","path":"$context.path","resourcePath":"$context.resourcePath","status":$context.status,"responseLatency":$context.responseLatency}'
+
+  CreateTableApiGateway:
+    DependsOn: UserPool
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: Create Table API Gateway
+      StageName: Staging
+      Cors:
+        AllowMethods: "'GET,POST,OPTIONS'"
+        AllowHeaders: "'Content-Type,Authorization'"
+        AllowOrigin: "'*'"
+      Auth:
+        Authorizers:
+          CognitoAuthorizer:
+            UserPoolArn: !GetAtt "UserPool.Arn"
+      AccessLogSetting:
+        # DestinationArn: !GetAtt AccessLogGroup.Arn
+        Format: '{"requestTime":"$context.requestTime","requestId":"$context.requestId","httpMethod":"$context.httpMethod","path":"$context.path","resourcePath":"$context.resourcePath","status":$context.status,"responseLatency":$context.responseLatency}'
+
   HelloWorldFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -137,6 +173,24 @@ Resources:
             Path: /hello
             Method: GET
 
+  CreateTableFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./src/CreateTable/
+      Handler: CreateTable::CreateTable.Function::FunctionHandler
+      Runtime: dotnet8
+      Architectures:
+      - x86_64
+      Events:
+        CreateTableApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref CreateTableApiGateway
+            Path: /create-table
+            Method: POST
+            Auth:
+              Authorizer: CognitoAuthorizer
+
   GenPresignedUrlFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -146,7 +200,7 @@ Resources:
       Architectures:
       - x86_64
       Events:
-        HelloWorldApi:
+        GenPresignedUrlApi:
           Type: Api
           Properties:
             RestApiId: !Ref GenPresignedUrlGateway
@@ -154,3 +208,47 @@ Resources:
             Method: GET
             Auth:
               Authorizer: CognitoAuthorizer
+  
+  FetchTableContentFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./src/FetchTableContent/
+      Handler: FetchTableContent::FetchTableContent.Function::FunctionHandler
+      Runtime: dotnet8
+      Architectures:
+      - x86_64
+      Role: null
+      Policies:
+        - Statement:
+          - Sid: DynamoDBFullAccess
+            Effect: Allow
+            Action:
+            - dynamodb:*
+            Resource: '*'
+      Events:
+        FetchTableContentApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref FetchTableContentGateway
+            Path: /fetch-table-content
+            Method: GET
+            # Auth:
+            #   Authorizer: CognitoAuthorizer
+
+  readingListDynamoDBTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: readingList
+      AttributeDefinitions:
+        - AttributeName: "ItemId"
+          AttributeType: "S"
+        - AttributeName: "Title"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "ItemId"
+          KeyType: "HASH"
+        - AttributeName: "Title"
+          KeyType: "RANGE"
+      ProvisionedThroughput:
+        ReadCapacityUnits: "1"
+        WriteCapacityUnits: "1"
