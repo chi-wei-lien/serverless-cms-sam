@@ -24,9 +24,13 @@ public class Function
     {
         var requestBody = apigProxyEvent.Body;
         Dictionary<string, string> requestBodyDict;
+        Dictionary<string, string> data = new Dictionary<string, string>();
         string groupId;
-        string fieldDictString;
+        // string fieldDictString;
         string groupName;
+        string dataString;
+        string createdOn;
+        string fields;
 
         try
         {
@@ -37,9 +41,17 @@ public class Function
             
             groupId = requestBodyDict["groupId"];
             groupName = requestBodyDict["groupName"];
+            createdOn = requestBodyDict["createdOn"];
+            fields = requestBodyDict["fields"];
+
+            data.Add("groupName", groupName);
+            data.Add("createdOn", createdOn);
+            data.Add("fields", fields);
+
+            dataString = JsonConvert.SerializeObject(data);
 
             // TODO:check if schema passed in is valid
-            fieldDictString = requestBodyDict["fields"];
+            // fieldDictString = requestBodyDict["fields"];
         }
         catch (Exception e)
         {
@@ -52,7 +64,7 @@ public class Function
             { "message", "item putted in dynamodb" },
         };
 
-        await PutItemAsync(groupId, groupName, fieldDictString);
+        await PutItemAsync(groupId, dataString);
     
         return new APIGatewayProxyResponse
         {
@@ -62,14 +74,14 @@ public class Function
         };
     }
 
-    public static async Task<bool> PutItemAsync(string groupId, string groupName, string fieldDictString)
+    public static async Task<bool> PutItemAsync(string groupId, string dataString)
     {
         PutItemResponse response;
         var item = new Dictionary<string, AttributeValue>
         {
             ["PK"] = new AttributeValue { S = groupId },
-            ["SK"] = new AttributeValue { S = groupName },
-            ["data"] = new AttributeValue { S = fieldDictString },
+            ["SK"] = new AttributeValue { S = "schema" },
+            ["data"] = new AttributeValue { S = dataString },
         };
 
         var request = new PutItemRequest

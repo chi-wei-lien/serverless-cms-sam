@@ -128,3 +128,4 @@ Next, you can use AWS Serverless Application Repository to deploy ready to use A
 - [How to give API gateway the permission to log to cloudwatch](https://coady.tech/aws-cloudwatch-logs-arn/)
 - [How to add Cognito to your AWS SAM app](https://scriptingis.life/Cognito-AWS-SAM/#variables)
 - [Secure User Authentication with Next.js, NextAuth.js, and AWS Cognito](https://evoila.com/blog/secure-user-authentication-with-next-js-nextauth-js-and-aws-cognito-2/)
+- [](https://www.rahulpnath.com/blog/dynamodb-querying-dotnet/#2-query-by-partition-key)

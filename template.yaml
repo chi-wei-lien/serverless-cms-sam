@@ -158,6 +158,26 @@ Resources:
         Format: '{"requestTime":"$context.requestTime","requestId":"$context.requestId","httpMethod":"$context.httpMethod","path":"$context.path","resourcePath":"$context.resourcePath","status":$context.status,"responseLatency":$context.responseLatency}'
 
 
+  GetGroupsGateway:
+    DependsOn: UserPool
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: Get Groups API Gateway
+      StageName: Staging
+      Cors:
+        AllowMethods: "'GET,POST,OPTIONS'"
+        AllowHeaders: "'Content-Type,Authorization'"
+        AllowOrigin: "'*'"
+      Auth:
+        Authorizers:
+          CognitoAuthorizer:
+            UserPoolArn: !GetAtt "UserPool.Arn"
+      AccessLogSetting:
+        # DestinationArn: !GetAtt AccessLogGroup.Arn
+        Format: '{"requestTime":"$context.requestTime","requestId":"$context.requestId","httpMethod":"$context.httpMethod","path":"$context.path","resourcePath":"$context.resourcePath","status":$context.status,"responseLatency":$context.responseLatency}'
+
+
+
   AddGroupGateway:
     DependsOn: UserPool
     Type: AWS::Serverless::Api
@@ -233,6 +253,32 @@ Resources:
           Properties:
             RestApiId: !Ref GenPresignedUrlGateway
             Path: /gen-presigned-url
+            Method: GET
+            Auth:
+              Authorizer: CognitoAuthorizer
+  
+  GetGroupsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./src/GetGroups/
+      Handler: GetGroups::GetGroups.Function::FunctionHandler
+      Runtime: dotnet8
+      Architectures:
+      - x86_64
+      Role: null
+      Policies:
+        - Statement:
+          - Sid: DynamoDBFullAccess
+            Effect: Allow
+            Action:
+            - dynamodb:*
+            Resource: '*'
+      Events:
+        GetGroupsApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref GetGroupsGateway
+            Path: /get-groups
             Method: GET
             Auth:
               Authorizer: CognitoAuthorizer
@@ -325,3 +371,17 @@ Resources:
       ProvisionedThroughput:
         ReadCapacityUnits: "1"
         WriteCapacityUnits: "1"
+      GlobalSecondaryIndexes: 
+        - 
+          IndexName: "myGSI"
+          KeySchema: 
+            - 
+              AttributeName: "SK"
+              KeyType: "HASH"
+          Projection: 
+            NonKeyAttributes: 
+              - "data"
+            ProjectionType: "INCLUDE"
+          ProvisionedThroughput: 
+            ReadCapacityUnits: "1"
+            WriteCapacityUnits: "1"
