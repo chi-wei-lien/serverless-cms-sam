@@ -158,7 +158,7 @@ Resources:
         Format: '{"requestTime":"$context.requestTime","requestId":"$context.requestId","httpMethod":"$context.httpMethod","path":"$context.path","resourcePath":"$context.resourcePath","status":$context.status,"responseLatency":$context.responseLatency}'
 
 
-  AddGroupToPostListGateway:
+  AddGroupGateway:
     DependsOn: UserPool
     Type: AWS::Serverless::Api
     Properties:
@@ -263,11 +263,11 @@ Resources:
             # Auth:
             #   Authorizer: CognitoAuthorizer
 
-  AddGroupToPostListFunction:
+  AddGroupFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: ./src/AddGroupToPostList/
-      Handler: AddGroupToPostList::AddGroupToPostList.Function::FunctionHandler
+      CodeUri: ./src/AddGroup/
+      Handler: AddGroup::AddGroup.Function::FunctionHandler
       Runtime: dotnet8
       Architectures:
       - x86_64
@@ -281,10 +281,10 @@ Resources:
             - dynamodb:*
             Resource: '*'
       Events:
-        AddGroupToPostListApi:
+        AddGroupApi:
           Type: Api
           Properties:
-            RestApiId: !Ref AddGroupToPostListGateway
+            RestApiId: !Ref AddGroupGateway
             Path: /add-group-to-post-list
             Method: POST
             Auth:
