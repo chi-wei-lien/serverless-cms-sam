@@ -157,6 +157,25 @@ Resources:
         # DestinationArn: !GetAtt AccessLogGroup.Arn
         Format: '{"requestTime":"$context.requestTime","requestId":"$context.requestId","httpMethod":"$context.httpMethod","path":"$context.path","resourcePath":"$context.resourcePath","status":$context.status,"responseLatency":$context.responseLatency}'
 
+
+  AddGroupToPostListGateway:
+    DependsOn: UserPool
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: Add Group To Post List API Gateway
+      StageName: Staging
+      Cors:
+        AllowMethods: "'GET,POST,OPTIONS'"
+        AllowHeaders: "'Content-Type,Authorization'"
+        AllowOrigin: "'*'"
+      Auth:
+        Authorizers:
+          CognitoAuthorizer:
+            UserPoolArn: !GetAtt "UserPool.Arn"
+      AccessLogSetting:
+        # DestinationArn: !GetAtt AccessLogGroup.Arn
+        Format: '{"requestTime":"$context.requestTime","requestId":"$context.requestId","httpMethod":"$context.httpMethod","path":"$context.path","resourcePath":"$context.resourcePath","status":$context.status,"responseLatency":$context.responseLatency}'
+
   HelloWorldFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -181,6 +200,15 @@ Resources:
       Runtime: dotnet8
       Architectures:
       - x86_64
+      Timeout: 120
+      Role: null
+      Policies:
+        - Statement:
+          - Sid: DynamoDBFullAccess
+            Effect: Allow
+            Action:
+            - dynamodb:*
+            Resource: '*'
       Events:
         CreateTableApi:
           Type: Api
@@ -235,6 +263,33 @@ Resources:
             # Auth:
             #   Authorizer: CognitoAuthorizer
 
+  AddGroupToPostListFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./src/AddGroupToPostList/
+      Handler: AddGroupToPostList::AddGroupToPostList.Function::FunctionHandler
+      Runtime: dotnet8
+      Architectures:
+      - x86_64
+      Role: null
+      Timeout: 120
+      Policies:
+        - Statement:
+          - Sid: DynamoDBFullAccess
+            Effect: Allow
+            Action:
+            - dynamodb:*
+            Resource: '*'
+      Events:
+        AddGroupToPostListApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref AddGroupToPostListGateway
+            Path: /add-group-to-post-list
+            Method: POST
+            Auth:
+              Authorizer: CognitoAuthorizer
+
   readingListDynamoDBTable:
     Type: AWS::DynamoDB::Table
     Properties:
@@ -248,6 +303,24 @@ Resources:
         - AttributeName: "ItemId"
           KeyType: "HASH"
         - AttributeName: "Title"
+          KeyType: "RANGE"
+      ProvisionedThroughput:
+        ReadCapacityUnits: "1"
+        WriteCapacityUnits: "1"
+
+  postDynamoDBTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: postList
+      AttributeDefinitions:
+        - AttributeName: "PK"
+          AttributeType: "S"
+        - AttributeName: "SK"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "PK"
+          KeyType: "HASH"
+        - AttributeName: "SK"
           KeyType: "RANGE"
       ProvisionedThroughput:
         ReadCapacityUnits: "1"
