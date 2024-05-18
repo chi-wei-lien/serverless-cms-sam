@@ -193,7 +193,24 @@ Resources:
       AccessLogSetting:
         # DestinationArn: !GetAtt AccessLogGroup.Arn
         Format: '{"requestTime":"$context.requestTime","requestId":"$context.requestId","httpMethod":"$context.httpMethod","path":"$context.path","resourcePath":"$context.resourcePath","status":$context.status,"responseLatency":$context.responseLatency}'
-
+  
+  GetPostsGateway:
+    DependsOn: UserPool
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: Get Posts API Gateway
+      StageName: Staging
+      Cors:
+        AllowMethods: "'GET,POST,OPTIONS'"
+        AllowHeaders: "'Content-Type,Authorization'"
+        AllowOrigin: "'*'"
+      Auth:
+        Authorizers:
+          CognitoAuthorizer:
+            UserPoolArn: !GetAtt "UserPool.Arn"
+      AccessLogSetting:
+        # DestinationArn: !GetAtt AccessLogGroup.Arn
+        Format: '{"requestTime":"$context.requestTime","requestId":"$context.requestId","httpMethod":"$context.httpMethod","path":"$context.path","resourcePath":"$context.resourcePath","status":$context.status,"responseLatency":$context.responseLatency}'
 
   AddGroupGateway:
     DependsOn: UserPool
@@ -344,6 +361,33 @@ Resources:
             Method: GET
             Auth:
               Authorizer: CognitoAuthorizer
+
+  GetPostsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./src/GetPosts/
+      Handler: GetPosts::GetPosts.Function::FunctionHandler
+      Runtime: dotnet8
+      Architectures:
+      - x86_64
+      Role: null
+      Policies:
+        - Statement:
+          - Sid: DynamoDBFullAccess
+            Effect: Allow
+            Action:
+            - dynamodb:*
+            Resource: '*'
+      Events:
+        GetPostsApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref GetPostsGateway
+            Path: /get-posts
+            Method: GET
+            Auth:
+              Authorizer: CognitoAuthorizer
+      
   
   FetchTableContentFunction:
     Type: AWS::Serverless::Function
