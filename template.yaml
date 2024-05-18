@@ -213,6 +213,25 @@ Resources:
         # DestinationArn: !GetAtt AccessLogGroup.Arn
         Format: '{"requestTime":"$context.requestTime","requestId":"$context.requestId","httpMethod":"$context.httpMethod","path":"$context.path","resourcePath":"$context.resourcePath","status":$context.status,"responseLatency":$context.responseLatency}'
 
+  UpdateGroupGateway:
+    DependsOn: UserPool
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: Update Group To Post List API Gateway
+      StageName: Staging
+      Cors:
+        AllowMethods: "'GET,POST,OPTIONS'"
+        AllowHeaders: "'Content-Type,Authorization'"
+        AllowOrigin: "'*'"
+      Auth:
+        Authorizers:
+          CognitoAuthorizer:
+            UserPoolArn: !GetAtt "UserPool.Arn"
+      AccessLogSetting:
+        # DestinationArn: !GetAtt AccessLogGroup.Arn
+        Format: '{"requestTime":"$context.requestTime","requestId":"$context.requestId","httpMethod":"$context.httpMethod","path":"$context.path","resourcePath":"$context.resourcePath","status":$context.status,"responseLatency":$context.responseLatency}'
+
+
   HelloWorldFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -375,6 +394,33 @@ Resources:
           Properties:
             RestApiId: !Ref AddGroupGateway
             Path: /add-group-to-post-list
+            Method: POST
+            Auth:
+              Authorizer: CognitoAuthorizer
+
+  UpdateGroupFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./src/UpdateGroup/
+      Handler: UpdateGroup::UpdateGroup.Function::FunctionHandler
+      Runtime: dotnet8
+      Architectures:
+      - x86_64
+      Role: null
+      Timeout: 120
+      Policies:
+        - Statement:
+          - Sid: DynamoDBFullAccess
+            Effect: Allow
+            Action:
+            - dynamodb:*
+            Resource: '*'
+      Events:
+        AddGroupApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref UpdateGroupGateway
+            Path: /update-group
             Method: POST
             Auth:
               Authorizer: CognitoAuthorizer
