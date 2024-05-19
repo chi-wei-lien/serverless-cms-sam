@@ -97,68 +97,7 @@ Resources:
   # AccessLogGroup:
   #   Type: AWS::Logs::LogGroup
 
-  HelloWorldApiGateway:
-    Type: AWS::Serverless::Api
-    Properties:
-      Name: Hello World API Gateway
-      StageName: Staging
-      AccessLogSetting:
-        # DestinationArn: !GetAtt AccessLogGroup.Arn
-        Format: '{"requestTime":"$context.requestTime","requestId":"$context.requestId","httpMethod":"$context.httpMethod","path":"$context.path","resourcePath":"$context.resourcePath","status":$context.status,"responseLatency":$context.responseLatency}'
-
-  GenPresignedUrlGateway:
-    # DependsOn: UserPool
-    Type: AWS::Serverless::Api
-    Properties:
-      Name: GenPresignedUrlGateway Api Gateway
-      StageName: Staging
-      Cors: "'*'"
-      Auth:
-        Authorizers:
-            CognitoAuthorizer:
-              UserPoolArn: !GetAtt "UserPool.Arn"
-      AccessLogSetting:
-        # DestinationArn: !GetAtt AccessLogGroup.Arn
-        Format: '{"requestTime":"$context.requestTime","requestId":"$context.requestId","httpMethod":"$context.httpMethod","path":"$context.path","resourcePath":"$context.resourcePath","status":$context.status,"responseLatency":$context.responseLatency}'
-
-  FetchTableContentGateway:
-    # DependsOn: UserPool
-    Type: AWS::Serverless::Api
-    Properties:
-      Name: FetchTableContent Api Gateway
-      StageName: Staging
-      Cors:
-            AllowMethods: "'GET,POST,OPTIONS'"
-            AllowHeaders: "'content-type'"
-            AllowOrigin: "'*'"
-      # Auth:
-      #   Authorizers:
-      #       CognitoAuthorizer:
-      #         UserPoolArn: !GetAtt "UserPool.Arn"
-      AccessLogSetting:
-        # DestinationArn: !GetAtt AccessLogGroup.Arn
-        Format: '{"requestTime":"$context.requestTime","requestId":"$context.requestId","httpMethod":"$context.httpMethod","path":"$context.path","resourcePath":"$context.resourcePath","status":$context.status,"responseLatency":$context.responseLatency}'
-
-  CreateTableApiGateway:
-    DependsOn: UserPool
-    Type: AWS::Serverless::Api
-    Properties:
-      Name: Create Table API Gateway
-      StageName: Staging
-      Cors:
-        AllowMethods: "'GET,POST,OPTIONS'"
-        AllowHeaders: "'Content-Type,Authorization'"
-        AllowOrigin: "'*'"
-      Auth:
-        Authorizers:
-          CognitoAuthorizer:
-            UserPoolArn: !GetAtt "UserPool.Arn"
-      AccessLogSetting:
-        # DestinationArn: !GetAtt AccessLogGroup.Arn
-        Format: '{"requestTime":"$context.requestTime","requestId":"$context.requestId","httpMethod":"$context.httpMethod","path":"$context.path","resourcePath":"$context.resourcePath","status":$context.status,"responseLatency":$context.responseLatency}'
-
-
-  GetGroupsGateway:
+  MyAPIGateway:
     DependsOn: UserPool
     Type: AWS::Serverless::Api
     Properties:
@@ -176,79 +115,6 @@ Resources:
         # DestinationArn: !GetAtt AccessLogGroup.Arn
         Format: '{"requestTime":"$context.requestTime","requestId":"$context.requestId","httpMethod":"$context.httpMethod","path":"$context.path","resourcePath":"$context.resourcePath","status":$context.status,"responseLatency":$context.responseLatency}'
 
-  GetGroupGateway:
-    DependsOn: UserPool
-    Type: AWS::Serverless::Api
-    Properties:
-      Name: Get Group API Gateway
-      StageName: Staging
-      Cors:
-        AllowMethods: "'GET,POST,OPTIONS'"
-        AllowHeaders: "'Content-Type,Authorization'"
-        AllowOrigin: "'*'"
-      Auth:
-        Authorizers:
-          CognitoAuthorizer:
-            UserPoolArn: !GetAtt "UserPool.Arn"
-      AccessLogSetting:
-        # DestinationArn: !GetAtt AccessLogGroup.Arn
-        Format: '{"requestTime":"$context.requestTime","requestId":"$context.requestId","httpMethod":"$context.httpMethod","path":"$context.path","resourcePath":"$context.resourcePath","status":$context.status,"responseLatency":$context.responseLatency}'
-  
-  GetPostsGateway:
-    DependsOn: UserPool
-    Type: AWS::Serverless::Api
-    Properties:
-      Name: Get Posts API Gateway
-      StageName: Staging
-      Cors:
-        AllowMethods: "'GET,POST,OPTIONS'"
-        AllowHeaders: "'Content-Type,Authorization'"
-        AllowOrigin: "'*'"
-      Auth:
-        Authorizers:
-          CognitoAuthorizer:
-            UserPoolArn: !GetAtt "UserPool.Arn"
-      AccessLogSetting:
-        # DestinationArn: !GetAtt AccessLogGroup.Arn
-        Format: '{"requestTime":"$context.requestTime","requestId":"$context.requestId","httpMethod":"$context.httpMethod","path":"$context.path","resourcePath":"$context.resourcePath","status":$context.status,"responseLatency":$context.responseLatency}'
-
-  AddGroupGateway:
-    DependsOn: UserPool
-    Type: AWS::Serverless::Api
-    Properties:
-      Name: Add Group To Post List API Gateway
-      StageName: Staging
-      Cors:
-        AllowMethods: "'GET,POST,OPTIONS'"
-        AllowHeaders: "'Content-Type,Authorization'"
-        AllowOrigin: "'*'"
-      Auth:
-        Authorizers:
-          CognitoAuthorizer:
-            UserPoolArn: !GetAtt "UserPool.Arn"
-      AccessLogSetting:
-        # DestinationArn: !GetAtt AccessLogGroup.Arn
-        Format: '{"requestTime":"$context.requestTime","requestId":"$context.requestId","httpMethod":"$context.httpMethod","path":"$context.path","resourcePath":"$context.resourcePath","status":$context.status,"responseLatency":$context.responseLatency}'
-
-  UpdateGroupGateway:
-    DependsOn: UserPool
-    Type: AWS::Serverless::Api
-    Properties:
-      Name: Update Group To Post List API Gateway
-      StageName: Staging
-      Cors:
-        AllowMethods: "'GET,POST,OPTIONS'"
-        AllowHeaders: "'Content-Type,Authorization'"
-        AllowOrigin: "'*'"
-      Auth:
-        Authorizers:
-          CognitoAuthorizer:
-            UserPoolArn: !GetAtt "UserPool.Arn"
-      AccessLogSetting:
-        # DestinationArn: !GetAtt AccessLogGroup.Arn
-        Format: '{"requestTime":"$context.requestTime","requestId":"$context.requestId","httpMethod":"$context.httpMethod","path":"$context.path","resourcePath":"$context.resourcePath","status":$context.status,"responseLatency":$context.responseLatency}'
-
-
   HelloWorldFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -261,7 +127,7 @@ Resources:
         HelloWorldApi:
           Type: Api
           Properties:
-            RestApiId: !Ref HelloWorldApiGateway
+            RestApiId: !Ref MyAPIGateway
             Path: /hello
             Method: GET
 
@@ -286,7 +152,7 @@ Resources:
         CreateTableApi:
           Type: Api
           Properties:
-            RestApiId: !Ref CreateTableApiGateway
+            RestApiId: !Ref MyAPIGateway
             Path: /create-table
             Method: POST
             Auth:
@@ -304,7 +170,7 @@ Resources:
         GenPresignedUrlApi:
           Type: Api
           Properties:
-            RestApiId: !Ref GenPresignedUrlGateway
+            RestApiId: !Ref MyAPIGateway
             Path: /gen-presigned-url
             Method: GET
             Auth:
@@ -330,7 +196,7 @@ Resources:
         GetGroupsApi:
           Type: Api
           Properties:
-            RestApiId: !Ref GetGroupsGateway
+            RestApiId: !Ref MyAPIGateway
             Path: /get-groups
             Method: GET
             Auth:
@@ -356,8 +222,34 @@ Resources:
         GetGroupsApi:
           Type: Api
           Properties:
-            RestApiId: !Ref GetGroupGateway
+            RestApiId: !Ref MyAPIGateway
             Path: /get-group
+            Method: GET
+            Auth:
+              Authorizer: CognitoAuthorizer
+  
+  GetPostFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./src/GetPost/
+      Handler: GetPost::GetPost.Function::FunctionHandler
+      Runtime: dotnet8
+      Architectures:
+      - x86_64
+      Role: null
+      Policies:
+        - Statement:
+          - Sid: DynamoDBFullAccess
+            Effect: Allow
+            Action:
+            - dynamodb:*
+            Resource: '*'
+      Events:
+        GetPostApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref MyAPIGateway
+            Path: /get-post
             Method: GET
             Auth:
               Authorizer: CognitoAuthorizer
@@ -382,7 +274,7 @@ Resources:
         GetPostsApi:
           Type: Api
           Properties:
-            RestApiId: !Ref GetPostsGateway
+            RestApiId: !Ref MyAPIGateway
             Path: /get-posts
             Method: GET
             Auth:
@@ -409,7 +301,7 @@ Resources:
         FetchTableContentApi:
           Type: Api
           Properties:
-            RestApiId: !Ref FetchTableContentGateway
+            RestApiId: !Ref MyAPIGateway
             Path: /fetch-table-content
             Method: GET
             # Auth:
@@ -436,12 +328,39 @@ Resources:
         AddGroupApi:
           Type: Api
           Properties:
-            RestApiId: !Ref AddGroupGateway
+            RestApiId: !Ref MyAPIGateway
             Path: /add-group-to-post-list
             Method: POST
             Auth:
               Authorizer: CognitoAuthorizer
 
+  AddPostFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./src/AddPost/
+      Handler: AddPost::AddPost.Function::FunctionHandler
+      Runtime: dotnet8
+      Architectures:
+      - x86_64
+      Role: null
+      Timeout: 120
+      Policies:
+        - Statement:
+          - Sid: DynamoDBFullAccess
+            Effect: Allow
+            Action:
+            - dynamodb:*
+            Resource: '*'
+      Events:
+        AddPostApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref MyAPIGateway
+            Path: /add-post
+            Method: POST
+            Auth:
+              Authorizer: CognitoAuthorizer
+  
   UpdateGroupFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -463,8 +382,35 @@ Resources:
         AddGroupApi:
           Type: Api
           Properties:
-            RestApiId: !Ref UpdateGroupGateway
+            RestApiId: !Ref MyAPIGateway
             Path: /update-group
+            Method: POST
+            Auth:
+              Authorizer: CognitoAuthorizer
+  
+  UpdatePostFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./src/UpdatePost/
+      Handler: UpdatePost::UpdatePost.Function::FunctionHandler
+      Runtime: dotnet8
+      Architectures:
+      - x86_64
+      Role: null
+      Timeout: 120
+      Policies:
+        - Statement:
+          - Sid: DynamoDBFullAccess
+            Effect: Allow
+            Action:
+            - dynamodb:*
+            Resource: '*'
+      Events:
+        UpdatePostApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref MyAPIGateway
+            Path: /update-post
             Method: POST
             Auth:
               Authorizer: CognitoAuthorizer

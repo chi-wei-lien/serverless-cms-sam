@@ -13,15 +13,16 @@ using Amazon.Lambda.APIGatewayEvents;
 // Assembly attribute to enable the Lambda function's JSON input to be converted into a .NET class.
 [assembly: LambdaSerializer(typeof(Amazon.Lambda.Serialization.SystemTextJson.DefaultLambdaJsonSerializer))]
 
-namespace GetPosts;
+namespace GetPost;
 
 public class Function
 {
     public async Task<APIGatewayProxyResponse> FunctionHandler(APIGatewayProxyRequest apigProxyEvent, ILambdaContext context)
     {
         string groupId = apigProxyEvent.QueryStringParameters["group-id"];
+        string postId = apigProxyEvent.QueryStringParameters["post-id"];
         groupId = Uri.UnescapeDataString(groupId);
-        var body = await QueryListAsync(groupId);
+        var body = await QueryListAsync(groupId, postId);
 
         return new APIGatewayProxyResponse
         {
@@ -31,34 +32,25 @@ public class Function
         };
     }
 
-    private async Task<string> QueryListAsync(string groupId)
+    private async Task<string> QueryListAsync(string groupId, string postId)
     {
         using var client = new AmazonDynamoDBClient(Amazon.RegionEndpoint.USEast1);
 
         var request = new QueryRequest()
         {
             TableName = "postList",
-            KeyConditionExpression = "PK = :groupId",
+            KeyConditionExpression = "PK = :groupId and SK = :postId",
             ExpressionAttributeValues = new Dictionary<string, AttributeValue>()
             {
                 {":groupId", new AttributeValue{S = groupId}},
+                {":postId", new AttributeValue{S = postId}}
             }
         };
 
 
         var response = await client.QueryAsync(request);
-        // var posts = [];
-        List<Dictionary<string, AttributeValue>> posts = new List<Dictionary<string, AttributeValue>>();
-
-        for (int i = 0; i < response.Items.Count; ++i) {
-            // comparing sorting key with "schema". If not equal add to result
-            if (String.Compare(response.Items[i]["SK"].S, "schema") != 0) {
-                posts.Add(response.Items[i]);
-            }
-            // Console.WriteLine(response.Iems[i]);
-        }
         Console.WriteLine(response.Count);
 
-        return JsonConvert.SerializeObject(posts);
+        return JsonConvert.SerializeObject(response.Items);
     }
 }
