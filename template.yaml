@@ -166,6 +166,7 @@ Resources:
       Runtime: dotnet8
       Architectures:
       - x86_64
+      Timeout: 120
       Events:
         GenPresignedUrlApi:
           Type: Api
@@ -185,6 +186,7 @@ Resources:
       Architectures:
       - x86_64
       Role: null
+      Timeout: 120
       Policies:
         - Statement:
           - Sid: DynamoDBFullAccess
@@ -199,8 +201,8 @@ Resources:
             RestApiId: !Ref MyAPIGateway
             Path: /get-groups
             Method: GET
-            Auth:
-              Authorizer: CognitoAuthorizer
+            # Auth:
+            #   Authorizer: CognitoAuthorizer
 
   GetGroupFunction:
     Type: AWS::Serverless::Function
@@ -211,6 +213,7 @@ Resources:
       Architectures:
       - x86_64
       Role: null
+      Timeout: 120
       Policies:
         - Statement:
           - Sid: DynamoDBFullAccess
@@ -237,6 +240,7 @@ Resources:
       Architectures:
       - x86_64
       Role: null
+      Timeout: 120
       Policies:
         - Statement:
           - Sid: DynamoDBFullAccess
@@ -263,6 +267,7 @@ Resources:
       Architectures:
       - x86_64
       Role: null
+      Timeout: 120
       Policies:
         - Statement:
           - Sid: DynamoDBFullAccess
@@ -290,6 +295,7 @@ Resources:
       Architectures:
       - x86_64
       Role: null
+      Timeout: 120
       Policies:
         - Statement:
           - Sid: DynamoDBFullAccess
