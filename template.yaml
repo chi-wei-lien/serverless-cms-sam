@@ -228,8 +228,8 @@ Resources:
             RestApiId: !Ref MyAPIGateway
             Path: /get-group
             Method: GET
-            Auth:
-              Authorizer: CognitoAuthorizer
+            # Auth:
+            #   Authorizer: CognitoAuthorizer
   
   GetPostFunction:
     Type: AWS::Serverless::Function
@@ -255,8 +255,8 @@ Resources:
             RestApiId: !Ref MyAPIGateway
             Path: /get-post
             Method: GET
-            Auth:
-              Authorizer: CognitoAuthorizer
+            # Auth:
+            #   Authorizer: CognitoAuthorizer
 
   GetPostsFunction:
     Type: AWS::Serverless::Function
@@ -282,8 +282,8 @@ Resources:
             RestApiId: !Ref MyAPIGateway
             Path: /get-posts
             Method: GET
-            Auth:
-              Authorizer: CognitoAuthorizer
+            # Auth:
+            #   Authorizer: CognitoAuthorizer
       
   
   FetchTableContentFunction:
@@ -335,7 +335,7 @@ Resources:
           Type: Api
           Properties:
             RestApiId: !Ref MyAPIGateway
-            Path: /add-group-to-post-list
+            Path: /add-group
             Method: POST
             Auth:
               Authorizer: CognitoAuthorizer
@@ -373,6 +373,7 @@ Resources:
       CodeUri: ./src/UpdateGroup/
       Handler: UpdateGroup::UpdateGroup.Function::FunctionHandler
       Runtime: dotnet8
+      MemorySize: 1024
       Architectures:
       - x86_64
       Role: null

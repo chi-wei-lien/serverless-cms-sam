@@ -77,18 +77,6 @@ public class Function
     public static async Task<bool> UpdateItemAsync(string groupId, string dataString)
     {
         UpdateItemResponse response;
-        // var item = new Dictionary<string, AttributeValue>
-        // {
-        //     ["PK"] = new AttributeValue { S = groupId },
-        //     ["SK"] = new AttributeValue { S = "schema" },
-        //     ["data"] = new AttributeValue { S = dataString },
-        // };
-
-        // var request = new PutItemRequest
-        // {
-        //     TableName = tableName,
-        //     Item = item,
-        // };
 
         var request = new UpdateItemRequest
         {
