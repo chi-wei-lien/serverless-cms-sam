@@ -1,42 +1,41 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-Description: >
+Description: |
   Sample SAM Template for serverless-cms-dotnet
-
     # You can add LoggingConfig parameters such as the Logformat, Log Group, and SystemLogLevel or ApplicationLogLevel. Learn more here https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-resource-function.html#sam-function-loggingconfig.
     LoggingConfig:
       LogFormat: JSON
 
 # Parameters:
-  # CognitoUserEmail:
-  #   Description: Email address of the created user
-  #   Type: String
-  # APIStageName:
-  #   Default: api
-  #   Description: StageName of API Gateway deployment
-  #   Type: String
+# CognitoUserEmail:
+#   Description: Email address of the created user
+#   Type: String
+# APIStageName:
+#   Default: api
+#   Description: StageName of API Gateway deployment
+#   Type: String
 
 Resources:
   UserPoolClient:
     Type: AWS::Cognito::UserPoolClient
     Properties:
       UserPoolId: !Ref UserPool
-      ClientName: "Serverless CMS Authentication Client"
+      ClientName: Serverless CMS Authentication Client
       GenerateSecret: true
       RefreshTokenValidity: 30
       AccessTokenValidity: 60
       IdTokenValidity: 60
       TokenValidityUnits:
-        AccessToken: "minutes"
-        IdToken: "minutes"
-        RefreshToken: "days"
+        AccessToken: minutes
+        IdToken: minutes
+        RefreshToken: days
       ExplicitAuthFlows:
         - ALLOW_REFRESH_TOKEN_AUTH
         - ALLOW_USER_SRP_AUTH
       SupportedIdentityProviders:
         - COGNITO
-      CallbackURLs: 
-        - "http://localhost:3000/api/auth/callback/cognito"
+      CallbackURLs:
+        - http://localhost:3000/api/auth/callback/cognito
       AllowedOAuthFlows:
         - code
       AllowedOAuthScopes:
@@ -48,7 +47,7 @@ Resources:
       EnableTokenRevocation: true
       EnablePropagateAdditionalUserContextData: false
       AuthSessionValidity: 3
-  
+
   # UserPoolUser:
   #   Type: AWS::Cognito::UserPoolUser
   #   Properties:
@@ -60,8 +59,8 @@ Resources:
   UserPoolDomain:
     Type: AWS::Cognito::UserPoolDomain
     Properties:
-      Domain : "serverless-cms-user-pool"
-      UserPoolId : !Ref UserPool
+      Domain: serverless-cms-user-pool
+      UserPoolId: !Ref UserPool
 
   UserPool:
     Type: AWS::Cognito::UserPool
@@ -88,7 +87,7 @@ Resources:
       UserAttributeUpdateSettings:
         AttributesRequireVerificationBeforeUpdate:
           - email
-      MfaConfiguration: "OFF"
+      MfaConfiguration: 'OFF'
       EmailConfiguration:
         EmailSendingAccount: COGNITO_DEFAULT
       UsernameConfiguration:
@@ -103,14 +102,16 @@ Resources:
     Properties:
       Name: Get Groups API Gateway
       StageName: Staging
+      BinaryMediaTypes:
+      - '*/*'
       Cors:
-        AllowMethods: "'GET,POST,OPTIONS'"
-        AllowHeaders: "'Content-Type,Authorization'"
-        AllowOrigin: "'*'"
+        AllowMethods: '''GET,POST,OPTIONS'''
+        AllowHeaders: '''Content-Type,Authorization'''
+        AllowOrigin: '''*'''
       Auth:
         Authorizers:
           CognitoAuthorizer:
-            UserPoolArn: !GetAtt "UserPool.Arn"
+            UserPoolArn: !GetAtt UserPool.Arn
       AccessLogSetting:
         # DestinationArn: !GetAtt AccessLogGroup.Arn
         Format: '{"requestTime":"$context.requestTime","requestId":"$context.requestId","httpMethod":"$context.httpMethod","path":"$context.path","resourcePath":"$context.resourcePath","status":$context.status,"responseLatency":$context.responseLatency}'
@@ -122,7 +123,7 @@ Resources:
       Handler: HelloWorld::HelloWorld.Function::FunctionHandler
       Runtime: dotnet8
       Architectures:
-      - x86_64
+        - x86_64
       Events:
         HelloWorldApi:
           Type: Api
@@ -138,16 +139,16 @@ Resources:
       Handler: CreateTable::CreateTable.Function::FunctionHandler
       Runtime: dotnet8
       Architectures:
-      - x86_64
+        - x86_64
       Timeout: 120
       Role: null
       Policies:
         - Statement:
-          - Sid: DynamoDBFullAccess
-            Effect: Allow
-            Action:
-            - dynamodb:*
-            Resource: '*'
+            - Sid: DynamoDBFullAccess
+              Effect: Allow
+              Action:
+                - dynamodb:*
+              Resource: '*'
       Events:
         CreateTableApi:
           Type: Api
@@ -165,7 +166,7 @@ Resources:
       Handler: GenPresignedUrl::GenPresignedUrl.Function::FunctionHandler
       Runtime: dotnet8
       Architectures:
-      - x86_64
+        - x86_64
       Timeout: 120
       Events:
         GenPresignedUrlApi:
@@ -176,7 +177,27 @@ Resources:
             Method: GET
             Auth:
               Authorizer: CognitoAuthorizer
-  
+
+  GetBucketItemFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./src/GetBucketItem/
+      Handler: GetBucketItem::GetBucketItem.Function::FunctionHandler
+      Runtime: dotnet8
+      Architectures:
+        - x86_64
+      Role: null
+      Timeout: 120
+      Events:
+        GetBucketItemApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref MyAPIGateway
+            Path: /get-bucket-item
+            Method: GET
+            # Auth:
+            #   Authorizer: CognitoAuthorizer
+
   GetGroupsFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -184,16 +205,16 @@ Resources:
       Handler: GetGroups::GetGroups.Function::FunctionHandler
       Runtime: dotnet8
       Architectures:
-      - x86_64
+        - x86_64
       Role: null
       Timeout: 120
       Policies:
         - Statement:
-          - Sid: DynamoDBFullAccess
-            Effect: Allow
-            Action:
-            - dynamodb:*
-            Resource: '*'
+            - Sid: DynamoDBFullAccess
+              Effect: Allow
+              Action:
+                - dynamodb:*
+              Resource: '*'
       Events:
         GetGroupsApi:
           Type: Api
@@ -211,16 +232,16 @@ Resources:
       Handler: GetGroup::GetGroup.Function::FunctionHandler
       Runtime: dotnet8
       Architectures:
-      - x86_64
+        - x86_64
       Role: null
       Timeout: 120
       Policies:
         - Statement:
-          - Sid: DynamoDBFullAccess
-            Effect: Allow
-            Action:
-            - dynamodb:*
-            Resource: '*'
+            - Sid: DynamoDBFullAccess
+              Effect: Allow
+              Action:
+                - dynamodb:*
+              Resource: '*'
       Events:
         GetGroupsApi:
           Type: Api
@@ -230,7 +251,7 @@ Resources:
             Method: GET
             # Auth:
             #   Authorizer: CognitoAuthorizer
-  
+
   GetPostFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -238,16 +259,16 @@ Resources:
       Handler: GetPost::GetPost.Function::FunctionHandler
       Runtime: dotnet8
       Architectures:
-      - x86_64
+        - x86_64
       Role: null
       Timeout: 120
       Policies:
         - Statement:
-          - Sid: DynamoDBFullAccess
-            Effect: Allow
-            Action:
-            - dynamodb:*
-            Resource: '*'
+            - Sid: DynamoDBFullAccess
+              Effect: Allow
+              Action:
+                - dynamodb:*
+              Resource: '*'
       Events:
         GetPostApi:
           Type: Api
@@ -265,16 +286,16 @@ Resources:
       Handler: GetPosts::GetPosts.Function::FunctionHandler
       Runtime: dotnet8
       Architectures:
-      - x86_64
+        - x86_64
       Role: null
       Timeout: 120
       Policies:
         - Statement:
-          - Sid: DynamoDBFullAccess
-            Effect: Allow
-            Action:
-            - dynamodb:*
-            Resource: '*'
+            - Sid: DynamoDBFullAccess
+              Effect: Allow
+              Action:
+                - dynamodb:*
+              Resource: '*'
       Events:
         GetPostsApi:
           Type: Api
@@ -284,8 +305,8 @@ Resources:
             Method: GET
             # Auth:
             #   Authorizer: CognitoAuthorizer
-      
-  
+
+
   FetchTableContentFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -293,16 +314,16 @@ Resources:
       Handler: FetchTableContent::FetchTableContent.Function::FunctionHandler
       Runtime: dotnet8
       Architectures:
-      - x86_64
+        - x86_64
       Role: null
       Timeout: 120
       Policies:
         - Statement:
-          - Sid: DynamoDBFullAccess
-            Effect: Allow
-            Action:
-            - dynamodb:*
-            Resource: '*'
+            - Sid: DynamoDBFullAccess
+              Effect: Allow
+              Action:
+                - dynamodb:*
+              Resource: '*'
       Events:
         FetchTableContentApi:
           Type: Api
@@ -320,16 +341,16 @@ Resources:
       Handler: AddGroup::AddGroup.Function::FunctionHandler
       Runtime: dotnet8
       Architectures:
-      - x86_64
+        - x86_64
       Role: null
       Timeout: 120
       Policies:
         - Statement:
-          - Sid: DynamoDBFullAccess
-            Effect: Allow
-            Action:
-            - dynamodb:*
-            Resource: '*'
+            - Sid: DynamoDBFullAccess
+              Effect: Allow
+              Action:
+                - dynamodb:*
+              Resource: '*'
       Events:
         AddGroupApi:
           Type: Api
@@ -347,16 +368,16 @@ Resources:
       Handler: AddPost::AddPost.Function::FunctionHandler
       Runtime: dotnet8
       Architectures:
-      - x86_64
+        - x86_64
       Role: null
       Timeout: 120
       Policies:
         - Statement:
-          - Sid: DynamoDBFullAccess
-            Effect: Allow
-            Action:
-            - dynamodb:*
-            Resource: '*'
+            - Sid: DynamoDBFullAccess
+              Effect: Allow
+              Action:
+                - dynamodb:*
+              Resource: '*'
       Events:
         AddPostApi:
           Type: Api
@@ -366,7 +387,7 @@ Resources:
             Method: POST
             Auth:
               Authorizer: CognitoAuthorizer
-  
+
   UpdateGroupFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -375,16 +396,16 @@ Resources:
       Runtime: dotnet8
       MemorySize: 1024
       Architectures:
-      - x86_64
+        - x86_64
       Role: null
       Timeout: 120
       Policies:
         - Statement:
-          - Sid: DynamoDBFullAccess
-            Effect: Allow
-            Action:
-            - dynamodb:*
-            Resource: '*'
+            - Sid: DynamoDBFullAccess
+              Effect: Allow
+              Action:
+                - dynamodb:*
+              Resource: '*'
       Events:
         AddGroupApi:
           Type: Api
@@ -394,7 +415,7 @@ Resources:
             Method: POST
             Auth:
               Authorizer: CognitoAuthorizer
-  
+
   UpdatePostFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -402,16 +423,16 @@ Resources:
       Handler: UpdatePost::UpdatePost.Function::FunctionHandler
       Runtime: dotnet8
       Architectures:
-      - x86_64
+        - x86_64
       Role: null
       Timeout: 120
       Policies:
         - Statement:
-          - Sid: DynamoDBFullAccess
-            Effect: Allow
-            Action:
-            - dynamodb:*
-            Resource: '*'
+            - Sid: DynamoDBFullAccess
+              Effect: Allow
+              Action:
+                - dynamodb:*
+              Resource: '*'
       Events:
         UpdatePostApi:
           Type: Api
@@ -427,47 +448,59 @@ Resources:
     Properties:
       TableName: readingList
       AttributeDefinitions:
-        - AttributeName: "ItemId"
-          AttributeType: "S"
-        - AttributeName: "Title"
-          AttributeType: "S"
+        - AttributeName: ItemId
+          AttributeType: S
+        - AttributeName: Title
+          AttributeType: S
       KeySchema:
-        - AttributeName: "ItemId"
-          KeyType: "HASH"
-        - AttributeName: "Title"
-          KeyType: "RANGE"
+        - AttributeName: ItemId
+          KeyType: HASH
+        - AttributeName: Title
+          KeyType: RANGE
       ProvisionedThroughput:
-        ReadCapacityUnits: "1"
-        WriteCapacityUnits: "1"
+        ReadCapacityUnits: '1'
+        WriteCapacityUnits: '1'
 
   postDynamoDBTable:
     Type: AWS::DynamoDB::Table
     Properties:
       TableName: postList
       AttributeDefinitions:
-        - AttributeName: "PK"
-          AttributeType: "S"
-        - AttributeName: "SK"
-          AttributeType: "S"
+        - AttributeName: PK
+          AttributeType: S
+        - AttributeName: SK
+          AttributeType: S
       KeySchema:
-        - AttributeName: "PK"
-          KeyType: "HASH"
-        - AttributeName: "SK"
-          KeyType: "RANGE"
+        - AttributeName: PK
+          KeyType: HASH
+        - AttributeName: SK
+          KeyType: RANGE
       ProvisionedThroughput:
-        ReadCapacityUnits: "1"
-        WriteCapacityUnits: "1"
-      GlobalSecondaryIndexes: 
-        - 
-          IndexName: "myGSI"
-          KeySchema: 
-            - 
-              AttributeName: "SK"
-              KeyType: "HASH"
-          Projection: 
-            NonKeyAttributes: 
-              - "data"
-            ProjectionType: "INCLUDE"
-          ProvisionedThroughput: 
-            ReadCapacityUnits: "1"
-            WriteCapacityUnits: "1"
+        ReadCapacityUnits: '1'
+        WriteCapacityUnits: '1'
+      GlobalSecondaryIndexes:
+        - IndexName: myGSI
+          KeySchema:
+            - AttributeName: SK
+              KeyType: HASH
+          Projection:
+            NonKeyAttributes:
+              - data
+            ProjectionType: INCLUDE
+          ProvisionedThroughput:
+            ReadCapacityUnits: '1'
+            WriteCapacityUnits: '1'
+  S3Bucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    Properties:
+      BucketName: serverless-cms-bucket
+      CorsConfiguration:
+        CorsRules:
+          - AllowedHeaders:
+              - '*'
+            AllowedMethods:
+              - GET
+              - PUT
+            AllowedOrigins:
+              - '*'

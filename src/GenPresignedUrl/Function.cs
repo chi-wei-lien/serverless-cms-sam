@@ -20,8 +20,8 @@ public class Function
 {
     public async Task<APIGatewayProxyResponse> FunctionHandler(APIGatewayProxyRequest apigProxyEvent, ILambdaContext context)
     {
-        const string bucketName = "serverless-cms-example-bucket";
-        const string objectKey = "sample.txt";
+        const string bucketName = "serverless-cms-bucket";
+        string objectKey = apigProxyEvent.QueryStringParameters["objectKey"];
 
         const double timeoutDuration = 12;
         AWSConfigsS3.UseSignatureVersion4 = true;
@@ -29,7 +29,6 @@ public class Function
         IAmazonS3 s3Client = new AmazonS3Client(RegionEndpoint.USEast1);
 
         string urlString = GenPresignedUrl(s3Client, bucketName, objectKey, timeoutDuration);
-        // string urlString = "test signed url";
         
         var body = new Dictionary<string, string>
         {
@@ -54,6 +53,8 @@ public class Function
                 BucketName = bucketName,
                 Key = objectKey,
                 Expires = DateTime.UtcNow.AddHours(duration),
+                Verb = HttpVerb.PUT,
+                ServerSideEncryptionMethod = ServerSideEncryptionMethod.AES256
             };
             urlString = client.GetPreSignedURL(request);
         }
