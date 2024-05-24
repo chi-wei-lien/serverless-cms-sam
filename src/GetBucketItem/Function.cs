@@ -34,9 +34,10 @@ public class Function
     {
         const string bucketName = "serverless-cms-bucket";
         string objectKey = apigProxyEvent.QueryStringParameters["objectKey"];
+        objectKey = Uri.UnescapeDataString(objectKey);
 
-        const double timeoutDuration = 12;
-        AWSConfigsS3.UseSignatureVersion4 = true;
+        // const double timeoutDuration = 12;
+        // AWSConfigsS3.UseSignatureVersion4 = true;
 
         IAmazonS3 s3Client = new AmazonS3Client(RegionEndpoint.USEast1);
 

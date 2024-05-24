@@ -96,14 +96,32 @@ Resources:
   # AccessLogGroup:
   #   Type: AWS::Logs::LogGroup
 
+  S3APIGateway:
+    DependsOn: UserPool
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: S3 API Gateway
+      StageName: Staging
+      BinaryMediaTypes:
+        - '*/*'
+      Cors:
+        AllowMethods: '''GET,POST,OPTIONS'''
+        AllowHeaders: '''Content-Type,Authorization'''
+        AllowOrigin: '''*'''
+      Auth:
+        Authorizers:
+          CognitoAuthorizer:
+            UserPoolArn: !GetAtt UserPool.Arn
+      AccessLogSetting:
+        # DestinationArn: !GetAtt AccessLogGroup.Arn
+        Format: '{"requestTime":"$context.requestTime","requestId":"$context.requestId","httpMethod":"$context.httpMethod","path":"$context.path","resourcePath":"$context.resourcePath","status":$context.status,"responseLatency":$context.responseLatency}'
+
   MyAPIGateway:
     DependsOn: UserPool
     Type: AWS::Serverless::Api
     Properties:
       Name: Get Groups API Gateway
       StageName: Staging
-      BinaryMediaTypes:
-      - '*/*'
       Cors:
         AllowMethods: '''GET,POST,OPTIONS'''
         AllowHeaders: '''Content-Type,Authorization'''
@@ -192,8 +210,49 @@ Resources:
         GetBucketItemApi:
           Type: Api
           Properties:
-            RestApiId: !Ref MyAPIGateway
+            RestApiId: !Ref S3APIGateway
             Path: /get-bucket-item
+            Method: GET
+            # Auth:
+            #   Authorizer: CognitoAuthorizer
+
+  ListBucketItemsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./src/ListBucketItems/
+      Handler: ListBucketItems::ListBucketItems.Function::FunctionHandler
+      Runtime: dotnet8
+      Architectures:
+        - x86_64
+      Role: null
+      Timeout: 120
+      Events:
+        ListBucketItemsApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref MyAPIGateway
+            Path: /list-bucket-items
+            Method: GET
+            # Auth:
+            #   Authorizer: CognitoAuthorizer
+
+
+  RemoveBucketItemFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./src/RemoveBucketItem/
+      Handler: RemoveBucketItem::RemoveBucketItem.Function::FunctionHandler
+      Runtime: dotnet8
+      Architectures:
+        - x86_64
+      Role: null
+      Timeout: 120
+      Events:
+        RemoveBucketItemApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref MyAPIGateway
+            Path: /remove-bucket-item
             Method: GET
             # Auth:
             #   Authorizer: CognitoAuthorizer
