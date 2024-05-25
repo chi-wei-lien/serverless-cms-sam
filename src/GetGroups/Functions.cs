@@ -56,6 +56,8 @@ public class Function
 
         var response = await client.QueryAsync(request);
 
+        Console.WriteLine(  )
+
         return JsonConvert.SerializeObject(response.Items);
     }
 

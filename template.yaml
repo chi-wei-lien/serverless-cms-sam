@@ -102,8 +102,9 @@ Resources:
     Properties:
       Name: S3 API Gateway
       StageName: Staging
-      BinaryMediaTypes:
-        - '*/*'
+      # Must uncomment when deploying
+      # BinaryMediaTypes:
+      #   - '*/*'
       Cors:
         AllowMethods: '''GET,POST,OPTIONS'''
         AllowHeaders: '''Content-Type,Authorization'''
@@ -236,26 +237,65 @@ Resources:
             # Auth:
             #   Authorizer: CognitoAuthorizer
 
-
-  RemoveBucketItemFunction:
+  DeleteBucketItemFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: ./src/RemoveBucketItem/
-      Handler: RemoveBucketItem::RemoveBucketItem.Function::FunctionHandler
+      CodeUri: ./src/DeleteBucketItem/
+      Handler: DeleteBucketItem::DeleteBucketItem.Function::FunctionHandler
       Runtime: dotnet8
       Architectures:
         - x86_64
       Role: null
       Timeout: 120
       Events:
-        RemoveBucketItemApi:
+        DeleteBucketItemApi:
           Type: Api
           Properties:
             RestApiId: !Ref MyAPIGateway
-            Path: /remove-bucket-item
+            Path: /delete-bucket-item
             Method: GET
-            # Auth:
-            #   Authorizer: CognitoAuthorizer
+            Auth:
+              Authorizer: CognitoAuthorizer
+
+  DeletePostFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./src/DeletePost/
+      Handler: DeletePost::DeletePost.Function::FunctionHandler
+      Runtime: dotnet8
+      Architectures:
+        - x86_64
+      Role: null
+      Timeout: 120
+      Events:
+        DeletePostApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref MyAPIGateway
+            Path: /delete-post
+            Method: GET
+            Auth:
+              Authorizer: CognitoAuthorizer
+
+  DeleteGroupFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./src/DeleteGroup/
+      Handler: DeleteGroup::DeleteGroup.Function::FunctionHandler
+      Runtime: dotnet8
+      Architectures:
+        - x86_64
+      Role: null
+      Timeout: 120
+      Events:
+        DeleteGroupApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref MyAPIGateway
+            Path: /delete-group
+            Method: GET
+            Auth:
+              Authorizer: CognitoAuthorizer
 
   GetGroupsFunction:
     Type: AWS::Serverless::Function
