@@ -92,6 +92,8 @@ Resources:
         EmailSendingAccount: COGNITO_DEFAULT
       UsernameConfiguration:
         CaseSensitive: false
+      # AdminCreateUserConfig:
+      #   AllowAdminCreateUserOnly: true
 
   # AccessLogGroup:
   #   Type: AWS::Logs::LogGroup
@@ -103,8 +105,8 @@ Resources:
       Name: S3 API Gateway
       StageName: Staging
       # Must uncomment when deploying
-      # BinaryMediaTypes:
-      #   - '*/*'
+      BinaryMediaTypes:
+        - '*/*'
       Cors:
         AllowMethods: '''GET,POST,OPTIONS'''
         AllowHeaders: '''Content-Type,Authorization'''
@@ -216,6 +218,13 @@ Resources:
             Method: GET
             # Auth:
             #   Authorizer: CognitoAuthorizer
+    Connectors:
+      GetBucketItemFunctionConn:
+        Properties:
+          Destination:
+            Id: S3Bucket
+          Permissions:
+            - Read
 
   ListBucketItemsFunction:
     Type: AWS::Serverless::Function
@@ -234,8 +243,15 @@ Resources:
             RestApiId: !Ref MyAPIGateway
             Path: /list-bucket-items
             Method: GET
-            # Auth:
-            #   Authorizer: CognitoAuthorizer
+            Auth:
+              Authorizer: CognitoAuthorizer
+    Connectors:
+      ListBucketItemsFunctionConn:
+        Properties:
+          Destination:
+            Id: S3Bucket
+          Permissions:
+            - Read
 
   DeleteBucketItemFunction:
     Type: AWS::Serverless::Function
